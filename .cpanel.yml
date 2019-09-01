@@ -2,6 +2,5 @@
 deployment:
  tasks:
   - export DEPLOYPATH=/home/bestboxb/public_html
-  - /bin/rm -Rf $DEPLOYPATH
   - /bin/mkdir $DEPLOYPATH
   - /bin/cp -R src/ $DEPLOYPATH
