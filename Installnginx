@@ -1,0 +1,120 @@
+#!/bin/bash
+
+ServerNev=$1
+killall apache2
+apt-get install nginx -y
+killall nginx
+
+echo "server
+{
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    root /var/www/;
+    server_name $ServerNev.bestbox.be;
+
+    return 301 https://$host$request_uri;
+}
+
+server
+{
+    listen              443 ssl;
+    server_name         $ServerNev.bestbox.be;
+    ssl_certificate     ssl.crt;
+    ssl_certificate_key ssl.key;
+    ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+    root /var/www/;
+    client_max_body_size 200M;
+    ###A rutorrent miatt kell, mert errort dobott, ha sok a tori
+
+    location ~ \.php$
+    {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php5.6-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location /rutorrent
+    {
+        auth_basic "rutorrent";
+        auth_basic_user_file /etc/nginx/htpasswd; 
+    }
+
+    location /rutorrent/downloads
+    {
+        alias /home/$remote_user/downloads/manual/;
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_format html;
+        autoindex_localtime on;
+    }
+}" | sudo tee /etc/nginx/sites-available/default >> $logfile 2>&1
+
+echo "-----BEGIN CERTIFICATE-----
+MIIGcTCCBVmgAwIBAgIRAIQYY0YfdkQhwHt6I0koGC0wDQYJKoZIhvcNAQELBQAw
+gY8xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAO
+BgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28gTGltaXRlZDE3MDUGA1UE
+AxMuU2VjdGlnbyBSU0EgRG9tYWluIFZhbGlkYXRpb24gU2VjdXJlIFNlcnZlciBD
+QTAeFw0xOTA2MjkwMDAwMDBaFw0yMDA5MjYyMzU5NTlaMFoxITAfBgNVBAsTGERv
+bWFpbiBDb250cm9sIFZhbGlkYXRlZDEeMBwGA1UECxMVR29HZXRTU0wgV2lsZGNh
+cmQgU1NMMRUwEwYDVQQDDAwqLmJlc3Rib3guYmUwggEiMA0GCSqGSIb3DQEBAQUA
+A4IBDwAwggEKAoIBAQCs4SvfP3U3DtwZt5illWQDmbMa//J5TiwbHB/l6rml3lys
+jV9g5CbHPORooMIh7SADcYcw3ZaC0nBZ65UgfrxFHk4qH1Y/W31VrGphV1GtUuDu
+dAKgxk+apKAjwN3/g4X6wb3na6h1t7LLsx4XKUfr2K2J1TB0K4lVpQeW149ado6Q
+o6Q0ZjjhLq62ztUpk6tgV4SUUk5BSe0k/w+s9f0USx5cq8GZZubzQbq4IlzYQHNV
+5IVb0VG+K7XlZVaGfZnzDETjqViXgSClgqHf8F88MUEVoXSpWWyrfwI8IdNi9O5K
+pRjP1DQ4IF6MWsKUi/CDWI5lyHH0w44rw3NSgxmxAgMBAAGjggL6MIIC9jAfBgNV
+HSMEGDAWgBSNjF7EVK2K4Xfpm/mbBeG4AY1h4TAdBgNVHQ4EFgQU5PBR4cSKNmQ/
+bZpZZy2c7Xqzlo4wDgYDVR0PAQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwHQYDVR0l
+BBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMEkGA1UdIARCMEAwNAYLKwYBBAGyMQEC
+AgcwJTAjBggrBgEFBQcCARYXaHR0cHM6Ly9zZWN0aWdvLmNvbS9DUFMwCAYGZ4EM
+AQIBMIGEBggrBgEFBQcBAQR4MHYwTwYIKwYBBQUHMAKGQ2h0dHA6Ly9jcnQuc2Vj
+dGlnby5jb20vU2VjdGlnb1JTQURvbWFpblZhbGlkYXRpb25TZWN1cmVTZXJ2ZXJD
+QS5jcnQwIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLnNlY3RpZ28uY29tMCMGA1Ud
+EQQcMBqCDCouYmVzdGJveC5iZYIKYmVzdGJveC5iZTCCAX4GCisGAQQB1nkCBAIE
+ggFuBIIBagFoAHYAu9nfvB+KcbWTlCOXqpJ7RzhXlQqrUugakJZkNo4e0YUAAAFr
+pB8XwwAABAMARzBFAiAAjKj6R3+Mv2jOHsd3WSSwO/UiwFuW9Y/7PELh5bxHIwIh
+AJI/C6Qlfsy1ZvwNulDMo2XCXezHqWYwVTdiZ+bt/zSMAHYAXqdz+d9WwOe1Nkh9
+0EngMnqRmgyEoRIShBh1loFxRVgAAAFrpB8X5AAABAMARzBFAiEAhLZ8XL564mcI
+gVIwziwOwmbhVAR8i50ALLLDxiG94IwCIGxu4NyCtkgHjMEgHeAPojpOW6B7QtnK
+geZfmzto2OWsAHYAb1N2rDHwMRnYmQCkURX/dxUcEdkCwQApBo2yCJo32RMAAAFr
+pB8X4gAABAMARzBFAiBsnhTV9PDXUxYBGFK+aoeCTkjXcS+xWXjRMFBb2UOINwIh
+ANF+UdVah2ekTBLmlC6eHWm9TFh3xgG36IKyyb/Flo5AMA0GCSqGSIb3DQEBCwUA
+A4IBAQBjmoc8ejXSaQgdnxqCi22eeleyP8/ib4jGpySUsB/2duWlFhGDV8erUPeU
+vFfIE4yxb/jLba/uITXRpy+FbqVSbLDx8IRawgHiGeywEwdZbUyE8Hk0vKUHaDhl
+igxLXwqk0GmDIVksois4xsULKladRlUV5dPMLMl1eGspU2TIzlFiUP1+m9p4gVRE
+TUNSdoyiKV56Lb6SYLdvHk3+hkWNNxBnR6qQjODwlEznYIFKTbJxeM12WyyQUcng
+arZSzsKh3I5FZW8SmKZHlWxlI6xBdhRKm7WmhuzgmkDcce5Cm5BDNzjKJJU/tWKW
+K9jWhCUOqTwGcgSA9dZG33ronlnK
+-----END CERTIFICATE-----" | sudo tee /etc/nginx/ssl.crt >> $logfile 2>&1
+
+
+echo "-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCs4SvfP3U3DtwZ
+t5illWQDmbMa//J5TiwbHB/l6rml3lysjV9g5CbHPORooMIh7SADcYcw3ZaC0nBZ
+65UgfrxFHk4qH1Y/W31VrGphV1GtUuDudAKgxk+apKAjwN3/g4X6wb3na6h1t7LL
+sx4XKUfr2K2J1TB0K4lVpQeW149ado6Qo6Q0ZjjhLq62ztUpk6tgV4SUUk5BSe0k
+/w+s9f0USx5cq8GZZubzQbq4IlzYQHNV5IVb0VG+K7XlZVaGfZnzDETjqViXgSCl
+gqHf8F88MUEVoXSpWWyrfwI8IdNi9O5KpRjP1DQ4IF6MWsKUi/CDWI5lyHH0w44r
+w3NSgxmxAgMBAAECggEBAJ0B41Zdy5a1aC/zDi9T/gFHFeLvkMeat3PnlxC4nOKH
+kKMlwfm9O3q3UrmzRpyJPwnhkWZP2OH3PRJtYoKgl1wuqc6XpzzjWnD0pajCJOvE
+2YO22KwrbyCDYu0VvIjSalvSmSYUIGrI6xkVE771PtxzbShA9kCLSa7+smXMX+VH
+SNhrZhA6r2IZpW4xzQFJ+GJf7d9e/bgVpnwD+eYTY/pywM7OtVSfdCwROspBvF1g
+F7rmrLNW6iJZdD/4jjKnoT4U4VynSNMSIA4vFZ5EugFgvIFhQmu7EZqXuSZu/NPu
+9NNEBv4FBBbEt1XRqR+JhqNbOoEgUfGeeyJg32+DIAECgYEA2cuvFNvwTYWzdJHI
+D1JoSbHXhdpTmRiQ2xXXaKwxk8/PSZ+g4VX50LLpML4rcOY38gdpgZJISNl27IT8
+ZkdzsAbG98aDncnAVhOh/M5FhiDJs3pDyE/Lpf1/bCjRTtEoXAGm48cXyeZMehoT
+dhqfXUYV1lGj3fQlV6od/y6x8PkCgYEAyzR9YASjVyOQHXui3vIMBzPmmbS1ouRf
+egjqlgfd98wX7cf8i1QgzLR8bptJeUy/4YjYKRymoxKpIM1/uY6imjVCac3VMKSf
+Q4yVETE1wSHlXC/iD6p+X1xXT+PLr8Yv5+JZNUzzdcLs4ZRfhuWclT+XphBy8p4j
+hpsgNzwq1HkCgYEAsuPwbQuyN5qoKglL7/naGx3uTs1jeQ6KfMlV4238UtKQCoMJ
+G80IonkxvI2XFOaj8TJRYNIMeXnVirQ4tLHfvify6bWuib4bMxhxJzsuM9tekQLO
+Bgw006SCMw7bzQdTRS8+Kz1utrFpA6nDbnCzkWNtsFniZP6SZY0fkmiCU9ECgYEA
+p2Ce/N4VJQuYA5D5QSainbQ0d9sP2hK+SijaAaaNQTUNaMDX1nP/aF4qOHkUdiOv
+0bgERSjiYWRXhzt9v3wrl1XTVI9E0YJn5R4BE14zZtfisqKGVF0dJrNK//Ukq65V
+e21ICc1OpGtg7xZl8RlkdtMguJrH8+wqWw+f459dsBECgYB0CXLf7TLQH3V1uCpz
+LnU/G/YP9dzjY9b6dnwLFJ/x0KoPLq8A3rcbLrs4CwZ+jyu6fi4Yk7P16ooqvMAh
+zqraDgCC7NI6ngi5giSHkPbNkJX5nyXUfael4zi6Sa1kOQFljaY/LlYtgED6FnnN
+48ISrvZUsyG5lvNpfSotYYlubg==
+-----END PRIVATE KEY-----" | sudo tee /etc/nginx/ssl.key >> $logfile 2>&1
