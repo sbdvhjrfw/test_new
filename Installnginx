@@ -119,3 +119,6 @@ LnU/G/YP9dzjY9b6dnwLFJ/x0KoPLq8A3rcbLrs4CwZ+jyu6fi4Yk7P16ooqvMAh
 zqraDgCC7NI6ngi5giSHkPbNkJX5nyXUfael4zi6Sa1kOQFljaY/LlYtgED6FnnN
 48ISrvZUsyG5lvNpfSotYYlubg==
 -----END PRIVATE KEY-----" | sudo tee /etc/nginx/ssl.key >> $logfile 2>&1
+
+service nginx restart
+rm -f -r Installnginx
