@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ServerNev=$1
+logfile=/dev/null
 killall apache2
 apt-get install nginx -y
 killall nginx
