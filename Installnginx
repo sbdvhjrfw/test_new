@@ -27,6 +27,7 @@ server
     root /var/www/;
     client_max_body_size 200M;
     ###A rutorrent miatt kell, mert errort dobott, ha sok a tori
+    index index.php index.html index.htm index.nginx-debian.html;
 
     location ~ \.php$
     {
