@@ -13,6 +13,8 @@ echo "server
     listen [::]:80 default_server;
     root /var/www/;
     server_name $ServerNev.bestbox.be;
+    access_log off;
+	error_log  /var/log/nginx/torrent-error.log;
 
     return 301 https://\$host\$request_uri;
 }
@@ -28,6 +30,8 @@ server
     client_max_body_size 200M;
     ###A rutorrent miatt kell, mert errort dobott, ha sok a tori
     index index.php index.html index.htm index.nginx-debian.html;
+    access_log off;
+	error_log  /var/log/nginx/torrent-error.log;
 
     location ~ \.php$
     {
